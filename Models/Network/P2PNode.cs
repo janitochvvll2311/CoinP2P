@@ -4,14 +4,14 @@ using System.Text.Json;
 
 namespace CoinP2P.Models.Network;
 
-public class Node
+public class P2PNode
 {
 
     public List<string> Log { get; } = new();
-    public List<Host> Hosts { get; } = new();
+    public List<P2PHost> Hosts { get; } = new();
     public List<ulong> Nonces { get; } = new();
 
-    public async Task<T?> Receive<T>(Host host, ArraySegment<byte> buffer) where T : Message
+    public async Task<T?> Receive<T>(P2PHost host, ArraySegment<byte> buffer) where T : P2PMessage
     {
         if (host.IsOpen)
         {
@@ -37,7 +37,7 @@ public class Node
         return null;
     }
 
-    public async Task Spread<T>(T? message, ArraySegment<byte> buffer) where T : Message
+    public async Task Spread<T>(T? message, ArraySegment<byte> buffer) where T : P2PMessage
     {
         if (message != null)
         {
@@ -61,7 +61,7 @@ public class Node
         }
     }
 
-    public async Task Poll<T>(Host host) where T : Message
+    public async Task Poll<T>(P2PHost host, Func<T, bool> callback) where T : P2PMessage
     {
         Hosts.Add(host);
         var buffer = new byte[1024];
@@ -70,7 +70,7 @@ public class Node
             try
             {
                 var message = await Receive<T>(host, buffer);
-                if (message != null && !Nonces.Contains(message.Nonce))
+                if (message != null && !Nonces.Contains(message.Nonce) && callback(message))
                     await Spread<T>(message, buffer);
             }
             catch (Exception ex)

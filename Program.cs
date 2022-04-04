@@ -4,7 +4,7 @@ using CoinP2P.Models.Network;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMvcCore()
                 .AddRazorViewEngine();
-builder.Services.AddSingleton<Node>();
+builder.Services.AddSingleton<P2PNode>();
 
 var app = builder.Build();
 
