@@ -60,4 +60,37 @@ public class CryptoController : Controller
         });
     }
 
+    public class SignModel
+    {
+        public string? Message { get; set; }
+        public byte[]? Key { get; set; }
+    }
+
+    [HttpPost]
+    public IActionResult Sign([FromBody] SignModel model)
+    {
+        var signature = model.Message!.GetBytes().SignData(model.Key!);
+        return Ok(new
+        {
+            Value = signature.GetBase64String()
+        });
+    }
+
+    public class VerifyModel
+    {
+        public string? Message { get; set; }
+        public byte[]? Signature { get; set; }
+        public byte[]? Key { get; set; }
+    }
+
+    [HttpPost]
+    public IActionResult Verify([FromBody] VerifyModel model)
+    {
+        var valid = model.Message!.GetBytes()!.VerifyData(model.Signature!, model.Key!);
+        return Ok(new
+        {
+            Value = valid
+        });
+    }
+
 }

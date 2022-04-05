@@ -6,7 +6,7 @@
 
 <h2>Crypto Manager</h2>
 
-<input type="hidden" id="isite" value="@(Model.Site)"/>
+<input type="hidden" id="isite" value="@(Model.Site)" />
 
 <div>
 
@@ -14,20 +14,31 @@
     <br />
     <input type="text" id="ipublic" />
     <br />
+    <input type="text" id="imessage" value="Secret Phrase" />
+    <br />
     <button onclick="generate()">Generate</button>
 
 </div>
 
 <div>
 
-    <input type="text" id="imessage" value="Secret Phrase"/>
-    <br />
     <input type="text" id="iencrypted" />
     <br />
     <input type="text" id="idecrypted" />
     <br />
     <button onclick="encrypt()">Encrypt</button>
     <button onclick="decrypt()">Decrypt</button>
+
+</div>
+
+<div>
+
+    <input type="text" id="isignature" />
+    <br />
+    <input type="text" id="ivalid" />
+    <br />
+    <button onclick="sign()">Sign</button>
+    <button onclick="verify()">Verify</button>
 
 </div>
 
