@@ -1,4 +1,1 @@
-POST https://localhost:7233/Network/ConnectTo
-Content-Type: application/json
-
-"coinp2p.azurewebsites.net/Network"
+GET https://localhost:7233/Crypto/Generate

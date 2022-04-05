@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace CoinP2P.Helpers;
+namespace CoinP2P.Models.Crypto;
 
 public static class CryptoExtensions
 {

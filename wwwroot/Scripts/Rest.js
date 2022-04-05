@@ -1,4 +1,5 @@
 async function POST(url = "", data = {}) {
+    var json = JSON.stringify(data);
     const response = await fetch(
         url,
         {
@@ -6,11 +7,12 @@ async function POST(url = "", data = {}) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(data)
+            body: json
         }
     )
     if (response.ok) {
-        return JSON.parse(response.json);
+        var json = await response.json();
+        return json;
     } else {
         console.log(`Http-Error: ${response.status}`);
     }
@@ -20,21 +22,19 @@ async function GET(url = "") {
     const response = await fetch(
         url,
         {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
+            method: "GET"
         }
     )
     if (response.ok) {
-        return JSON.parse(response.json);
+        var json = await response.json();
+        return json;
     } else {
         console.log(`Http-Error: ${response.status}`);
     }
 }
 
 async function PUT(url = "", data = {}) {
+    var json = JSON.stringify(data);
     const response = await fetch(
         url,
         {
@@ -42,17 +42,19 @@ async function PUT(url = "", data = {}) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(data)
+            body: json
         }
     )
     if (response.ok) {
-        return JSON.parse(response.json);
+        var json = await response.json();
+        return json;
     } else {
         console.log(`Http-Error: ${response.status}`);
     }
 }
 
 async function DELETE(url = "", data = {}) {
+    var json = JSON.stringify(data);
     const response = await fetch(
         url,
         {
@@ -60,11 +62,12 @@ async function DELETE(url = "", data = {}) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(data)
+            body: json
         }
     )
     if (response.ok) {
-        return JSON.parse(response.json);
+        var json = await response.json();
+        return json;
     } else {
         console.log(`Http-Error: ${response.status}`);
     }
