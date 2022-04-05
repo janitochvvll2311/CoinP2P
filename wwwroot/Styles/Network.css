@@ -1,0 +1,28 @@
+#iremote,
+#inbox,
+#imessage
+{
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#inbox,
+#imessage
+{
+    width: calc(100% - 10px);
+}
+
+#iremote
+{
+    width: 500px;
+}
+
+#inbox {
+    height: 50vh;
+    overflow-y: scroll;
+    border: 1px solid black;
+    margin: 5px;
+}
+
+#inbox img {
+    width: fit-content;
+}

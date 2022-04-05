@@ -18,7 +18,11 @@ public class NetworkController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        return View();
+        var site = $"{HttpContext.Request.Host}{HttpContext.Request.Path}";
+        return View(new
+        {
+            Site = site
+        });
     }
 
     [HttpGet]
@@ -53,6 +57,17 @@ public class NetworkController : Controller
         await Node.Poll<ChatMessage>(host, (m) =>
         {
             return true;
+        });
+    }
+
+    [HttpGet]
+    public IActionResult Log()
+    {
+        return View(new
+        {
+            Hosts = Node.Hosts.Select(x => x.Remote),
+            Nonces = Node.Nonces,
+            Log = Node.Log
         });
     }
 
