@@ -11,50 +11,50 @@ public class P2PNode
     public List<P2PHost> Hosts { get; } = new();
     public List<ulong> Nonces { get; } = new();
 
-    public async Task<T?> Receive<T>(P2PHost host, ArraySegment<byte> buffer) where T : P2PMessage
+    public async Task Receive<T>(P2PContext<T> context) where T : P2PMessage
     {
-        if (host.IsOpen)
+        if (context.IsOpen)
         {
             try
             {
-                var result = await host.Socket!.ReceiveAsync(buffer, CancellationToken.None);
+                var result = await context.Host.Socket!.ReceiveAsync(context.Buffer, CancellationToken.None);
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    var json = Encoding.UTF8.GetString(buffer.Array!, buffer.Offset, buffer.Count);
+                    var json = Encoding.UTF8.GetString(context.Buffer.Array!, context.Buffer.Offset, result.Count);
                     var message = JsonSerializer.Deserialize<T>(json);
-                    return message;
+                    context.Message = message;
                 }
                 else
                 {
-                    await host.Socket!.CloseOutputAsync(WebSocketCloseStatus.Empty, string.Empty, CancellationToken.None);
+                    await context.Host.Socket!.CloseOutputAsync(WebSocketCloseStatus.Empty, string.Empty, CancellationToken.None);
                 }
             }
             catch (Exception ex)
             {
-                Log.Add($"{host.Remote}:{ex.Message}");
+                Log.Add($"{context.Host.Remote}:{ex.Message}");
             }
         }
-        return null;
     }
 
-    public async Task Spread<T>(T? message, ArraySegment<byte> buffer) where T : P2PMessage
+    public async Task Spread<T>(P2PContext<T> context) where T : P2PMessage
     {
-        if (message != null)
+        if (context.Message != null)
         {
-            var json = JsonSerializer.Serialize<T>(message);
-            var count = Encoding.UTF8.GetBytes(json, buffer);
-            buffer = new(buffer.Array!, buffer.Offset, buffer.Count);
-            foreach (var host in Hosts.ToArray())
+            var json = JsonSerializer.Serialize<T>(context.Message);
+            var count = Encoding.UTF8.GetBytes(json, context.Buffer);
+            var data = new ArraySegment<byte>(context.Buffer.Array!, context.Buffer.Offset, count);
+            var remotes = Hosts.Where(x => x != context.Host).ToArray();
+            foreach (var remote in remotes)
             {
-                if (host.IsOpen)
+                if (remote.IsOpen)
                 {
                     try
                     {
-                        await host.Socket!.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                        await remote.Socket!.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None);
                     }
                     catch (Exception ex)
                     {
-                        Log.Add($"{host.Remote}:{ex.Message}");
+                        Log.Add($"{remote.Remote}:{ex.Message}");
                     }
                 }
             }
@@ -65,13 +65,17 @@ public class P2PNode
     {
         Hosts.Add(host);
         var buffer = new byte[1024];
-        while (host.IsOpen)
+        var context = new P2PContext<T>(host, buffer);
+        while (context.IsOpen)
         {
             try
             {
-                var message = await Receive<T>(host, buffer);
-                if (message != null && !Nonces.Contains(message.Nonce) && callback(message))
-                    await Spread<T>(message, buffer);
+                await Receive<T>(context);
+                if (context.Message != null && !Nonces.Contains(context.Message.Nonce) && callback(context.Message))
+                {
+                    Nonces.Add(context.Message.Nonce);
+                    await Spread<T>(context);
+                }
             }
             catch (Exception ex)
             {

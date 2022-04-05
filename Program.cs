@@ -1,4 +1,3 @@
-using System.Net.WebSockets;
 using CoinP2P.Models.Network;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +7,10 @@ builder.Services.AddSingleton<P2PNode>();
 
 var app = builder.Build();
 
+app.UseStaticFiles();
 app.UseRouting();
+
+app.UseWebSockets();
 
 app.MapControllerRoute(
     "areas",
