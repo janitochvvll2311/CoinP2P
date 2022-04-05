@@ -29,4 +29,14 @@ public static class FormatExtensions
         return bytes;
     }
 
+    public static string GetHexString(this byte[] bytes)
+    {
+        StringBuilder sb = new();
+        foreach (var b in bytes)
+        {
+            sb.Append(b.ToString("x2"));
+        }
+        return sb.ToString();
+    }
+
 }

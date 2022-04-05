@@ -13,6 +13,9 @@ let inbox = getElement("inbox");
 let inickname = getElement("inickname");
 let imessage = getElement("imessage");
 
+let iprivate = getElement("iprivate");
+let ipublic = getElement("ipublic");
+
 let nonces = [];
 let sockets = [];
 let parser = new DOMParser();
@@ -29,7 +32,7 @@ function print(message) {
     inbox.appendChild(doc.body);
 }
 
-function connectMe() {
+async function connectMe() {
     var socket = new WebSocket(`wss://${iremote.value}/ConnectMe`);
     socket.onopen = (e) => {
         alert(`Connection OPEN: ${socket.url}`);
@@ -52,16 +55,30 @@ function connectTo() {
     REST.POST(`https://${isite.value}/ConnectTo`, iremote.value);
 }
 
-function send() {
+async function generate() {
+    const keys = await REST.GET(`https://${isite.value}/Generate`)
+    iprivate.value = keys.private;
+    ipublic.value = keys.public;
+}
+
+async function sign(message = "") {
+    const signature = await REST.POST(`https://${isite.value}/Sign`, { remote: ipublic.value, message: message, key: iprivate.value });
+    return signature.value;
+}
+
+async function send() {
     if (sockets.length > 0) {
         const message = `${inickname.value}> ${imessage.value}`;
+        const signature = await sign(message);
         print(message)
         var nonce = random();
         while (nonces.indexOf(nonce) >= 0)
             nonce = random();
         const data = JSON.stringify({
             Nonce: nonce,
-            Message: message
+            Remote: ipublic.value,
+            Message: message,
+            Signature: signature
         });
         sockets.forEach((v, i, a) => {
             if (v.readyState == WebSocket.OPEN)
