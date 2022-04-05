@@ -1,0 +1,7 @@
+#iprivate,
+#ipublic,
+#imessage,
+#iencrypted,
+#idecrypted {
+    width: calc(100% - 10px);
+}

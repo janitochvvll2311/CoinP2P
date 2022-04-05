@@ -1,0 +1,45 @@
+@{
+    Layout = "MainLayout";
+}
+
+<link rel="stylesheet" href="~/Styles/Crypto.css">
+
+<h2>Crypto Manager</h2>
+
+<input type="hidden" id="isite" value="@(Model.Site)" />
+
+<div>
+
+    <input type="text" id="iprivate" />
+    <br />
+    <input type="text" id="ipublic" />
+    <br />
+    <input type="text" id="imessage" value="Secret Phrase" />
+    <br />
+    <button onclick="generate()">Generate</button>
+
+</div>
+
+<div>
+
+    <input type="text" id="iencrypted" />
+    <br />
+    <input type="text" id="idecrypted" />
+    <br />
+    <button onclick="encrypt()">Encrypt</button>
+    <button onclick="decrypt()">Decrypt</button>
+
+</div>
+
+<div>
+
+    <input type="text" id="isignature" />
+    <br />
+    <input type="text" id="ivalid" />
+    <br />
+    <button onclick="sign()">Sign</button>
+    <button onclick="verify()">Verify</button>
+
+</div>
+
+<script src="~/Scripts/Crypto.js"></script>
