@@ -1,0 +1,27 @@
+@{
+    Layout = "NetworkLayout";
+}
+
+<div>
+    <h2>Hosts</h2>
+    @foreach (var host in Model.Hosts)
+    {
+        <li>@(host)</li>
+    }
+</div>
+
+<div>
+    <h2>Nonces</h2>
+    @foreach (var nonce in Model.Nonces)
+    {
+        <li>N#(@(nonce))</li>
+    }
+</div>
+
+<div>
+    <h2>Log</h2>
+    @foreach (var log in Model.Log)
+    {
+        <li>@(log)</li>
+    }
+</div>

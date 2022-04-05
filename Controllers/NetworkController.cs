@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using CoinP2P.Models;
 using CoinP2P.Models.Network;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,9 +8,9 @@ namespace CoinP2P.Controllers;
 public class NetworkController : Controller
 {
 
-    public Node Node { get; }
+    public P2PNode Node { get; }
 
-    public NetworkController(Node node)
+    public NetworkController(P2PNode node)
     {
         Node = node;
     }
@@ -17,7 +18,11 @@ public class NetworkController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        return View();
+        var site = $"{HttpContext.Request.Host}{HttpContext.Request.Path}";
+        return View(new
+        {
+            Site = site
+        });
     }
 
     [HttpGet]
@@ -26,12 +31,15 @@ public class NetworkController : Controller
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            var host = new CoinP2P.Models.Network.Host
+            var host = new P2PHost
             {
                 Remote = $"{HttpContext.Connection.RemoteIpAddress}:{HttpContext.Connection.RemotePort}",
                 Socket = socket
             };
-            await Node.Poll<Message>(host);
+            await Node.Poll<ChatMessage>(host, (m) =>
+            {
+                return true;
+            });
         }
     }
 
@@ -41,12 +49,26 @@ public class NetworkController : Controller
         var socket = new ClientWebSocket();
         var uri = new Uri($"wss://{target}/ConnectMe");
         await socket.ConnectAsync(uri, CancellationToken.None);
-        var host = new CoinP2P.Models.Network.Host
+        var host = new P2PHost
         {
             Remote = target,
             Socket = socket
         };
-        await Node.Poll<Message>(host);
+        await Node.Poll<ChatMessage>(host, (m) =>
+        {
+            return true;
+        });
+    }
+
+    [HttpGet]
+    public IActionResult Log()
+    {
+        return View(new
+        {
+            Hosts = Node.Hosts.Select(x => x.Remote),
+            Nonces = Node.Nonces,
+            Log = Node.Log
+        });
     }
 
 }

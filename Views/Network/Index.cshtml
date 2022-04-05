@@ -1,0 +1,30 @@
+@{
+    Layout = "NetworkLayout";
+}
+
+<link rel="stylesheet" href="~/Styles/Network.css">
+
+<h2>Network Manager</h2>
+
+<input type="hidden" id="isite" value="@(Model?.Site)" />
+
+<div class="networkpad">
+
+    <input type="text" id="iremote" value="@(Model?.Site)" />
+    <br />
+    <button onclick="connectMe()">Connect Me</button>
+
+</div>
+
+<div class="chatpad">
+
+    <div id="inbox"></div>
+    <input type="text" id="inickname" value="Anonymus" />
+    <br />
+    <textarea id="imessage"></textarea>
+    <br />
+    <button onclick="send()">Send</button>
+
+</div>
+
+<script src="~/Scripts/Network.js"></script>
