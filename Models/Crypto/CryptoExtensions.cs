@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 
 namespace CoinP2P.Helpers;
 
-public static class CryptoHelper
+public static class CryptoExtensions
 {
 
     public static byte[] Encrypt(this byte[] data, byte[] pubkey)
