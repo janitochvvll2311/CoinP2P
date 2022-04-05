@@ -30,7 +30,7 @@ public class NetworkController : Controller
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
-            var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            using var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
             var host = new P2PHost
             {
                 Remote = $"{HttpContext.Connection.RemoteIpAddress}:{HttpContext.Connection.RemotePort}",
@@ -43,15 +43,15 @@ public class NetworkController : Controller
         }
     }
 
-    [HttpGet]
-    public async Task ConnectTo(string target)
+    [HttpPost]
+    public async Task ConnectTo([FromBody] string remote)
     {
-        var socket = new ClientWebSocket();
-        var uri = new Uri($"wss://{target}/ConnectMe");
+        using var socket = new ClientWebSocket();
+        var uri = new Uri($"wss://{remote}/ConnectMe");
         await socket.ConnectAsync(uri, CancellationToken.None);
         var host = new P2PHost
         {
-            Remote = target,
+            Remote = remote,
             Socket = socket
         };
         await Node.Poll<ChatMessage>(host, (m) =>

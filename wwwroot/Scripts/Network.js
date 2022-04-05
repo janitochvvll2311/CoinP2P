@@ -48,6 +48,10 @@ function connectMe() {
     };
 }
 
+function connectTo() {
+    REST.POST(`https://${isite.value}/ConnectTo`, iremote.value);
+}
+
 function send() {
     if (sockets.length > 0) {
         const message = `${inickname.value}> ${imessage.value}`;
