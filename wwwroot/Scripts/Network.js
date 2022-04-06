@@ -51,8 +51,9 @@ async function connectMe() {
     };
 }
 
-function connectTo() {
-    REST.POST(`https://${isite.value}/ConnectTo`, iremote.value);
+async function connectTo() {
+    var response = await REST.POST(`https://${isite.value}/ConnectTo`, iremote.value);
+    alert(response.message);
 }
 
 async function generate() {
