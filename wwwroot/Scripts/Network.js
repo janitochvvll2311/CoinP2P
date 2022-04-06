@@ -70,9 +70,11 @@ async function send() {
     if (sockets.length > 0) {
         const message = `${inickname.value}> ${imessage.value}`;
         const signature = await sign(message);
+        print(message)
         var nonce = random();
         while (nonces.indexOf(nonce) >= 0)
             nonce = random();
+        nonces.push(nonce);
         const data = JSON.stringify({
             Nonce: nonce,
             Remote: ipublic.value,
