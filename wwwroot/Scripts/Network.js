@@ -74,6 +74,7 @@ async function send() {
         var nonce = random();
         while (nonces.indexOf(nonce) >= 0)
             nonce = random();
+        nonces.push(nonce);
         const data = JSON.stringify({
             Nonce: nonce,
             Remote: ipublic.value,
