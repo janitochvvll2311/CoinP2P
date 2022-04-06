@@ -87,3 +87,9 @@ async function send() {
         });
     }
 }
+
+window.onunload = (e) => {
+    sockets.forEach((v, i, a) => {
+        v.close(1005, "");
+    });
+}

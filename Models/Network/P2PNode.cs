@@ -15,23 +15,21 @@ public class P2PNode
     {
         if (context.IsOpen)
         {
-            try
+            var result = await context.Host.Socket!.ReceiveAsync(context.Buffer, CancellationToken.None);
+            switch (result.MessageType)
             {
-                var result = await context.Host.Socket!.ReceiveAsync(context.Buffer, CancellationToken.None);
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
+                case WebSocketMessageType.Text:
                     var json = Encoding.UTF8.GetString(context.Buffer.Array!, context.Buffer.Offset, result.Count);
                     var message = JsonSerializer.Deserialize<T>(json);
                     context.Message = message;
-                }
-                else
-                {
-                    await context.Host.Socket!.CloseOutputAsync(WebSocketCloseStatus.Empty, string.Empty, CancellationToken.None);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Add($"{context.Host.Remote}:{ex.Message}");
+                    break;
+                case WebSocketMessageType.Binary:
+                    context.Message = null;
+                    break;
+                case WebSocketMessageType.Close:
+                    await context.Host.Socket!.CloseOutputAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None);
+                    context.Message = null;
+                    break;
             }
         }
     }
@@ -66,9 +64,9 @@ public class P2PNode
         Hosts.Add(host);
         var buffer = new byte[1024];
         var context = new P2PContext<T>(host, buffer);
-        while (context.IsOpen)
+        try
         {
-            try
+            while (context.IsOpen)
             {
                 await Receive<T>(context);
                 if (context.Message != null && !Nonces.Contains(context.Message.Nonce) && callback(context.Message))
@@ -77,10 +75,10 @@ public class P2PNode
                     await Spread<T>(context);
                 }
             }
-            catch (Exception ex)
-            {
-                Log.Add($"{host.Remote}:{ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Log.Add($"{host.Remote}:{ex.Message}");
         }
         Hosts.Remove(host);
     }

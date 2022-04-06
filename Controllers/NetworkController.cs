@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using CoinP2P.Helpers;
 using CoinP2P.Models;
@@ -36,17 +37,10 @@ public class NetworkController : Controller
         });
     }
 
-    [HttpGet]
-    public async Task ConnectMe()
+    public async Task Listen(P2PHost host)
     {
-        if (HttpContext.WebSockets.IsWebSocketRequest)
+        try
         {
-            using var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            var host = new P2PHost
-            {
-                Remote = $"{HttpContext.Connection.RemoteIpAddress}:{HttpContext.Connection.RemotePort}",
-                Socket = socket
-            };
             await Node.Poll<ChatMessage>(host, (m) =>
             {
                 if (!Validator(m))
@@ -57,27 +51,58 @@ public class NetworkController : Controller
                 return true;
             });
         }
+        catch (Exception ex)
+        {
+            Node.Log.Add($"--- ERROR --- : {ex.Message}");
+        }
+        host.Socket!.Dispose();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ConnectMe()
+    {
+        if (HttpContext.WebSockets.IsWebSocketRequest)
+        {
+            var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            var host = new P2PHost
+            {
+                Remote = $"{HttpContext.Connection.RemoteIpAddress}:{HttpContext.Connection.RemotePort}",
+                Socket = socket
+            };
+            _ = Listen(host);
+            return Ok(new
+            {
+                Message = "Connection OPEN"
+            });
+        }
+        return BadRequest(new
+        {
+            Message = "Connection ERROR"
+        });
     }
 
     [HttpPost]
-    public async Task ConnectTo([FromBody] string remote)
+    public async Task<IActionResult> ConnectTo([FromBody] string remote)
     {
-        using var socket = new ClientWebSocket();
+        var socket = new ClientWebSocket();
         var uri = new Uri($"wss://{remote}/ConnectMe");
         await socket.ConnectAsync(uri, CancellationToken.None);
-        var host = new P2PHost
+        if (socket.State == WebSocketState.Open)
         {
-            Remote = remote,
-            Socket = socket
-        };
-        await Node.Poll<ChatMessage>(host, (m) =>
-        {
-            if (!Validator(m))
+            var host = new P2PHost
             {
-                Node.Log.Add($"{host.Remote}: Usurpation alert! (Address: {m.Remote!.GetBase64Array().ComputeHash().GetHexString()})");
-                return false;
-            }
-            return true;
+                Remote = remote,
+                Socket = socket
+            };
+            _ = Listen(host);
+            return Ok(new
+            {
+                Message = "Connection OPEN"
+            });
+        }
+        return BadRequest(new
+        {
+            Message = "Connection ERROR"
         });
     }
 
