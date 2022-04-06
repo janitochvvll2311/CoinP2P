@@ -58,8 +58,8 @@ public class NetworkController : Controller
         host.Socket!.Dispose();
     }
 
-    [HttpGet]
-    public async Task<IActionResult> ConnectMe()
+    [HttpGet] // By WebSocket
+    public async Task ConnectMe()
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
@@ -69,16 +69,8 @@ public class NetworkController : Controller
                 Remote = $"{HttpContext.Connection.RemoteIpAddress}:{HttpContext.Connection.RemotePort}",
                 Socket = socket
             };
-            _ = Listen(host);
-            return Ok(new
-            {
-                Message = "Connection OPEN"
-            });
+            await Listen(host);
         }
-        return BadRequest(new
-        {
-            Message = "Connection ERROR"
-        });
     }
 
     [HttpPost]
